@@ -25,7 +25,7 @@ function App() {
         </div>
       </ContextProvider>
     </BrowserRouter>
-
+    /*v 1.0.0*/
   )
 }
 
