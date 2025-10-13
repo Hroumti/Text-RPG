@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Render(){
     const navigate = useNavigate()
-    const {handleChoice, currSceneId, handleStatChange, script, stats} = useContext(Context)
+    const {handleChoice, currSceneId, handleStatChange, script, stats, lastStatChange} = useContext(Context)
     // This hook correctly runs *after* stats have been updated and the component has re-rendered.
 useEffect(()=>{
     // Check for game-over conditions based on the LATEST stats value
@@ -18,6 +18,8 @@ useEffect(()=>{
     return(
         <div className="render-container">
             <div className="text-container">
+                {lastStatChange&&<span className="statChange">Stats were updated: {Object.entries(lastStatChange).map(([key, value]) =>value>0?`+${value} ${key}; `:`${value} ${key}; `)}<br/><hr/></span>}
+                
                 {script[currSceneId||'place_holder'].text}.
                 {script[currSceneId||'place_holder'].image && <img src={script[currSceneId||'place_holder'].image} alt="scene image" />}
             </div>
