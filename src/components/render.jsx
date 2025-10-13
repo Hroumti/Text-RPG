@@ -1,16 +1,17 @@
 import { useContext, useEffect, useState } from "react";
 import Context from './context'
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 
 export default function Render(){
     const navigate = useNavigate()
     const {handleChoice, currSceneId, handleStatChange, script, stats, lastStatChange} = useContext(Context)
+    const [gameOver, setGameOver] = useState(false)
     // This hook correctly runs *after* stats have been updated and the component has re-rendered.
 useEffect(()=>{
     // Check for game-over conditions based on the LATEST stats value
     console.log(stats)
     if(stats.hp <= 0 || stats.dignity <= 0 || stats.filthiness <= 0){ 
-        navigate('/notice')
+        setGameOver(true)
     }
 }, [stats, navigate]); // Reruns whenever `stats` object changes
 
@@ -24,7 +25,7 @@ useEffect(()=>{
                 {script[currSceneId||'place_holder'].image && <img src={script[currSceneId||'place_holder'].image} alt="scene image" />}
             </div>
             <div className="choice-container">
-                {script[currSceneId||'place_holder'].choices && script[currSceneId||'place_holder'].choices.map((c, index)=> (
+                {gameOver?<Link to={'/notice'} className="start">You lost</Link>:script[currSceneId||'place_holder'].choices && script[currSceneId||'place_holder'].choices.map((c, index)=> (
                     <button key={index} onClick={()=>handleChoice(c)}>{c.text}</button>
                 ))}
             </div>

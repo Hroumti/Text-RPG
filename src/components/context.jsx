@@ -12,13 +12,13 @@ export function ContextProvider({children}){
     const [currSceneId, setCurrSceneId] = useState('start_scene')
     const [stats, setStats] = useState({hp:10, dignity:10, hygiene:10})
     const [lastStatChange, setLastStatChange] = useState(null)
+    const [report, setReport] = useState({title:null, description:null,imgURL:null, finalStats:null})
     
 
     const script = {
     // Scene 1: Starting point (No changes needed here)
     "start_scene": {
         text: "Your miserable alarm clock screams its daily warning. You have a class in a mere sixty minutes. What critical life choice do you make?",
-        image: "https://placehold.co/200x150",
         choices: [
             {
                 text: "Accept fate. Drag yourself out of bed and face the school day.",
@@ -37,7 +37,6 @@ export function ContextProvider({children}){
 
     "prepare_for_school": {
         text: stats.hp===10?`You manage to peel yourself out of bed, immediately dreading your life. Time to face the kitchen. You open the fridge—it's a chaotic mess of options. What fuels your impending doom?`:`Rubbing your bruises and dreading your miserable life, you open the fridge—it's a chaotic mess of options. What fuels your impending doom?`,
-        image: "https://placehold.co/200x150",
         choices: [
             {
                 text: "Scrambled Eggs (A basic level of stench).",
@@ -140,6 +139,9 @@ export function ContextProvider({children}){
                 // CRITICAL FIX: Removed the statChange logic here entirely.
                 text: "Skip the singing and punch him in the mouth.",
                 nextSceneId: "fight",
+                statChange: stats.hp <= 8
+                    ? { hp: -2, dignity: -2 } // Pathetic Loss: Take more damage and shame
+                    : { dignity: 1 }   
             }
         ]
     },
@@ -153,10 +155,6 @@ export function ContextProvider({children}){
             {
                 text: "Continue",
                 nextSceneId: "continue_school_road",
-                // Applying the consequences based on the HP stat
-                statChange: stats.hp <= 8
-                    ? { hp: -2, dignity: -2 } // Pathetic Loss: Take more damage and shame
-                    : { dignity: 1 }          // Surprising Win: Gain confidence
             },
         ]
     },
@@ -267,7 +265,7 @@ export function ContextProvider({children}){
                 statChange: {hp:-2, dignity: -4},
             },
             {
-                text: "Trash around",
+                text: "Thrash around",
                 nextSceneId: "thrash_around",
             }
         ]
@@ -297,8 +295,8 @@ export function ContextProvider({children}){
         text:`place_holder`,
         choices:[
             {
-                text:`place_holder`,
-                nextSceneId:'place_holder'
+                text:`Restart`,
+                nextSceneId:'start_scence'
             }
         ]
     },
@@ -368,7 +366,7 @@ export function ContextProvider({children}){
     
     // NEW SCENE: kiosk Stop
     "kiosk_stop": {
-        text: `You purchase a sickly-green energy drink marked "Radioactive Blast." You chug it quickly on the curb, feeling a strange tingling in your fingertips.`,
+        text: `You purchase a sickly-green energy drink marked "Radioactive Blast." You chug it quickly on the curb, feeling energized but with a lingering powerful smell.`,
         choices: [
             {
                 text: "Head to class.",
@@ -380,7 +378,7 @@ export function ContextProvider({children}){
 
     // NEW SCENE: Thrash Around Consequence (The current thrash around leads to a loop with a massive HP loss, so this is the final resolution)
     "thrash_around":{
-        text: `While thrashing around while getting beaten up, you stumbled onto the coat hanger, and your jacket fell to the ground. A lit cigarette fell from the pocket and is now resting on the carpet. Your father stops beating you, his eyes wide with horror at the cigarette. He stares at you with quiet fury. What do you do?.`,
+        text: `While thrashing around while getting beaten up, you stumbled onto the coat hanger, and your jacket fell to the ground. A pack of cigarette fell from the pocket and is now resting on the carpet. Your father stops beating you, his eyes wide with horror at the cigarette. He stares at you with quiet fury. What do you do?.`,
         choices:[
             {
                 text:`There's nothing you can do (You're cooked).`,
@@ -443,7 +441,7 @@ export function ContextProvider({children}){
             text: "Continue the agonizing focus.",
             nextSceneId: "class_endure",
             // If you failed (high Hygiene), you look shameful
-            statChange: stats.hygiene >= 5 ? { dignity: -2 } : null
+            statChange: stats.hygiene <= 5 ? { dignity: -2 } : null
         },
         
     ]:[
@@ -501,7 +499,7 @@ export function ContextProvider({children}){
         },
         {
             text: "Go straight to the next class.",
-            nextSceneId: "place_holder", // End of this sequence
+            nextSceneId: "second_period", // End of this sequence
         }
     ]
 },
@@ -513,10 +511,12 @@ export function ContextProvider({children}){
         {
             text: "Rinse face and injuries (HP focused).",
             nextSceneId: "bathroom_rinse",
+            statChange: { hp: 1 } // Minor HP gain
         },
         {
             text: "Douse self in soap/water (Hygiene focused).",
             nextSceneId: "bathroom_douse",
+            statChange: { hygiene: -2 }
         }
     ]
 },
@@ -527,8 +527,8 @@ export function ContextProvider({children}){
     choices: [
         {
             text: "Head to class.",
-            nextSceneId: "place_holder",
-            statChange: { hp: 1 } // Minor HP gain
+            nextSceneId: "second_period",
+            
         }
     ]
 },
@@ -539,11 +539,493 @@ export function ContextProvider({children}){
     choices: [
         {
             text: "Head to class.",
-            nextSceneId: "place_holder",
-            statChange: { hygiene: -2 } // Minor hygiene improvement
+            nextSceneId: "second_period",
+             // Minor hygiene improvement
         }
     ]
 },
+"second_period": {
+    text: `You arrive in the second period, English Literature. The teacher, an ancient woman named Ms. Bighrdayn, slowly pushes her glasses up and announces, "Pop quiz. Analyze this quote from *Anita bath*." Your mind immediately goes blank.`,
+    choices: [
+        {
+            text: "Feign a cough and attempt to discreetly copy from your neighbor.",
+            // HP Check: If HP is low (fatigue), cheating is risky.
+            nextSceneId: stats.hp <= 6 ? "quiz_cheat_fail" : "quiz_cheat_success",
+            // Stat change occurs here immediately upon choice:
+            statChange: stats.hp <= 6 ? { dignity: -3 } : { dignity: 2 }
+        },
+        {
+            text: "Write the first coherent thing that comes to mind (The Bruteforce Method).",
+            // Hygiene Check: If Hygiene is high (smelly), the teacher is annoyed.
+            nextSceneId: stats.hygiene <= 6 ? "quiz_bruteforce_fail" : "quiz_bruteforce_success",
+            // Stat change occurs here immediately upon choice:
+            statChange: stats.hygiene <= 6 ? { dignity: -1 } : { dignity: 1 }
+        },
+        {
+            text: "Lean back and try to think hard about the meaning.",
+            // Dignity Check: Confidence aids focus.
+            nextSceneId: stats.dignity >= 8 ? "quiz_think_success" : "quiz_think_fail",
+            // Stat change occurs here immediately upon choice:
+            statChange: stats.dignity >= 8 ? { dignity: 1 } : { dignity: -2 }
+        }
+    ]
+},
+// NEW SCENE: Cheat Success
+"quiz_cheat_success": {
+    text: `Your movements are slick and silent. You successfully lean over, getting a perfect, legible view of your neighbor's complex, pretentious essay. You furiously scribble down their answer just before the teacher looks your way. You earned a free A!`,
+    choices: [
+        {
+            text: "Accept your victory.",
+            nextSceneId: "quiz_results",
+        }
+    ]
+},
+
+// NEW SCENE: Cheat Fail
+"quiz_cheat_fail": {
+    text: `You turn too quickly, your aching muscles protesting with a **loud groan** against the chair. The sudden movement, combined with the visible fatigue on your face, instantly alerts Ms. Bighrdayn. She stares until you stop breathing, then slowly walks over to rip your paper in half. You failed spectacularly.`,
+    choices: [
+        {
+            text: "Accept your fate.",
+            nextSceneId: "quiz_results",
+        }
+    ]
+},
+
+// NEW SCENE: Bruteforce Success
+"quiz_bruteforce_success": {
+    text: `Your argument is absurd (you wrote about a white shark), but your tolerable scent and effort prevent the teacher from grading out of spite. Ms. Bighrdayn awards you a sympathetic **'C-'** for originality. You barely passed.`,
+    choices: [
+        {
+            text: "Reluctantly move on.",
+            nextSceneId: "quiz_results",
+        }
+    ]
+},
+
+// NEW SCENE: Bruteforce Fail
+"quiz_bruteforce_fail": {
+    text: `Ms. Bighrdayn reads your paper. As she holds it, the faint, lingering aroma of sardines and old socks wafts up from it. She gives you a pained look, as if unsure whether to grade the paper or spray it with disinfectant. She slams a **'D-'** onto the page just to get it out of her sight. You failed.`,
+    choices: [
+        {
+            text: "Reluctantly move on.",
+            nextSceneId: "quiz_results",
+        }
+    ]
+},
+
+// NEW SCENE: Think Success
+"quiz_think_success": {
+    text: `You lean back, ignoring the pressure. Your high **Dignity** allows you to focus, blocking out the pain and the smells. You calmly construct a coherent argument. You feel surprisingly intelligent and get a passing grade.`,
+    choices: [
+        {
+            text: "Submit the paper.",
+            nextSceneId: "quiz_results",
+        }
+    ]
+},
+
+// NEW SCENE: Think Fail
+"quiz_think_fail": {
+    text: `You try to concentrate, but your low **Dignity** means your mind is a chaotic mess of self-doubt and internal panicking. All you can think about is the morning's chaos. You scrawl a confused, panicked stream of consciousness onto the page, resulting in an obvious failure.`,
+    choices: [
+        {
+            text: "Submit the paper.",
+            nextSceneId: "quiz_results",
+        }
+    ]
+},
+
+// (The following scenes remain the same, leading to the next section)
+"quiz_results": {
+    text: `The quiz is over, regardless of your success. You either feel smugly successful, crushed by failure, or somewhere in the middle. The morning drags on, leading up to the most anticipated (and risky) part of the school day: **lunch**.`,
+    choices: [
+        {
+            text: "Head to the cafeteria.",
+            nextSceneId: "lunch_scene",
+        }
+    ]
+},
+
+// MODIFIED SCENE: lunch_scene (The next major decision point)
+"lunch_scene": {
+    text: `The cafeteria is a deafening, chaotic mess, smelling vaguely of floor wax and overcooked mystery meat. You clutch your tray (or perhaps just a stale piece of bread). Where do you sit?`,
+    choices: [
+        {
+            text: "The **Cool Kids' Table** (High risk, high reward).",
+            nextSceneId: "lunch_cool_kids_attempt", 
+        },
+        {
+            text: "The **Corner Table**, alone and invisible (Low risk, no reward).",
+            nextSceneId: "lunch_corner_alone",
+            statChange: stats.dignity <= 5 ? { dignity: -1 } : { hp: 1 } 
+
+        }
+    ]
+},
+
+// NEW SCENE: Lunch - Corner Table (Dignity vs. Solitude)
+"lunch_corner_alone": {
+    text: stats.dignity <= 5
+        ? `You find the furthest, darkest corner and slump down, staring at your food. No one bothers you. The silence is a relief, but the isolation only amplifies the deep sense of shame and worthlessness from the morning's failures.`
+        : `You choose the corner for peace, but your inherent **Dignity** makes solitude feel empowering, not pathetic. You use the quiet time to mentally review the morning's chaos, feeling surprisingly calm and collected.`,
+    choices: [
+        {
+            text: "Finish lunch.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+// NEW SCENE: Lunch - Cool Kids Attempt (The Social Test)
+"lunch_cool_kids_attempt": {
+    text: `You approach the table where the school's most judgmental elite sit, laughing loudly and ignoring the world. You stand awkwardly, waiting for an invitation that will never come. The social pressure is immense. How do you attempt to break the ice?`,
+    choices: [
+        {
+            text: "Try to impress them with a bold statement (Dignity Check).",
+            nextSceneId: "lunch_bold_statement",
+        },
+        {
+            text: "Just stand there and wait for a sign of acceptance (Hygiene Check).",
+            nextSceneId: "lunch_stand_and_stink",
+        },
+        {
+            text: "Attempt to sit down without permission (Combined Check).",
+            nextSceneId: "lunch_sit_uninvited",
+        }
+    ]
+},
+
+// NEW SCENE: Lunch - Bold Statement (Dignity Check)
+"lunch_bold_statement": {
+    text: `You clear your throat and announce, "This food is an insult! I'm pretty sure the cook just used the toilet water to cook the beans!"`,
+    choices: [
+        {
+            // Dignity success: The confidence (even if misplaced) earns a grudging laugh.
+            nextSceneId: stats.dignity >= 8 ? "bold_statement_success" : "bold_statement_fail",
+            text: "Wait for their reaction.",
+            statChange: stats.dignity >= 8 ? { dignity: 2 } : { dignity: -3 }
+        }
+    ]
+},
+
+// NEW SCENE: Bold Statement Success
+"bold_statement_success": {
+    text: `Your sheer, unearned confidence is baffling, but they find your statement unintentionally hilarious. The "leader" slaps the table once. "Okay, nerd," he says, smiling slightly. "Take a seat." You actually gained temporary, conditional respect.`,
+    choices: [
+        {
+            text: "Sit down.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+// NEW SCENE: Bold Statement Fail
+"bold_statement_fail": {
+    text: `Your voice cracks halfway the sentence. The cool kids stare at you like you're an exotic, pathetic bug. "Did the chair just talk?" one asks. You immediately regret your existence.`,
+    choices: [
+        {
+            text: "Slither away to the corner table.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+// NEW SCENE: Lunch - Stand and Stink (Hygiene Check)
+"lunch_stand_and_stink": {
+    text: `You stand silently, hoping your presence will be accepted through osmosis. The group's laughter gradually dies down.`,
+    choices: [
+        {
+            // Hygiene success: You're clean enough that the *idea* of you isn't repulsive.
+            nextSceneId: stats.hygiene >= 5 ? "stand_stink_success" : "stand_stink_fail",
+            text: "Endure the awkward silence.",
+            statChange: stats.hygiene >= 5 ? { dignity: 1 } : { dignity: -2 }
+        }
+    ]
+},
+
+// NEW SCENE: Stand and Stink Success
+"stand_stink_success": {
+    text: `The leader finally glances at you. Since you don't look or smell aggressively bad, he just shrugs. "Whatever. Sit down. Don't breathe on the fries though." A win is a win.`,
+    choices: [
+        {
+            text: "Sit down.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+// NEW SCENE: Stand and Stink Fail
+"stand_stink_fail": {
+    text: `The cool kids fall silent. The leader, slowly leans back and gestures vaguely toward you with a single fry. "Listen," he says, sounding genuinely weary. "We're going to need you to move. Even a skunk would be disgusted but the toxins you're emitting. You are a biological risk to all living beings. Retreat."`,
+    choices: [
+        {
+            text: "Retreat in shame.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+
+// NEW SCENE: Lunch - Sit Uninvited (Combined Check)
+"lunch_sit_uninvited": {
+    text: `You decide that action is better than waiting. You casually try to slide into an empty spot at the edge of the table. This is the ultimate test of your morning's preparation.`,
+    choices: [
+        {
+            // Combined Check: Requires high Dignity AND low Hygiene to succeed.
+            // Success Condition: Dignity >= 8 AND Hygiene <= 3
+            nextSceneId: (stats.dignity >= 8 && stats.hygiene >= 5) ? "sit_uninvited_success" : "sit_uninvited_fail",
+            text: "Commit to the sit.",
+            statChange: (stats.dignity >= 8 && stats.hygiene >= 5) ? { dignity: 3 } : { hp: -1, dignity: -3 }
+        }
+    ]
+},
+
+// NEW SCENE: Sit Uninvited Success
+"sit_uninvited_success": {
+    text: `Your effortless move and lack of offensive stench completely disarm the group. The leader merely nods. "Bold move," he says. "We're impressed by the audacity." You have momentarily ascended the social ladder.`,
+    choices: [
+        {
+            text: "Enjoy your triumph.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+// NEW SCENE: Sit Uninvited Fail
+"sit_uninvited_fail": {
+    text: `Before your rear even touches the seat, two of the biggest cool kids push your tray—and your body—backwards. You crash to the floor in a pathetic tangle of limbs and spilled mystery meat. The whole cafeteria laughs. "Get lost, creep!" one shouts. You are physically and socially assaulted.`,
+    choices: [
+        {
+            text: "Crawl away.",
+            nextSceneId: "lunch_end",
+        }
+    ]
+},
+
+// MODIFIED SCENE: lunch_end
+"lunch_end": {
+    text: `Lunch is over. Whether you ate alone or were forcibly removed, the bell rings, dragging you toward the afternoon classes. Your ordeal continues...`,
+    choices: [
+        {
+            text: "Continue to Third Period (Gym Class).",
+            nextSceneId: "third_period_hallway", 
+        }
+    ]
+},
+
+// MODIFIED SCENE: third_period_hallway (The Nemesis Test)
+"third_period_hallway": {
+    text: `Navigating the crowded hallway, you run straight into your perennial nemesis, **Stu Pidd**. He's standing directly in your path. "Well, well," Stu sneers. "Look who decided to show up for school today." He's blocking your only path to the gym.`,
+    choices: [
+        {
+            text: "Launch a preemptive attack (HP Check: The physical option).",
+            nextSceneId: "nemesis_attack",
+            statChange: stats.hp >= 8 ? { dignity: 2 } : { hp: -2, dignity: -3 }
+
+        },
+        {
+            text: "Try to insult him with a devastating, witty retort (Dignity Check: The mental option).",
+            nextSceneId: "nemesis_insult",
+            statChange: stats.dignity >= 8 ? { dignity: 3 } : { dignity: -4 }
+
+        },
+        {
+            text: "Just try to squeeze past him (Hygiene Check: The disgusting option).",
+            nextSceneId: "nemesis_squeeze",
+            statChange: stats.hygiene <= 3 ? { dignity: 1 } : { hp: -1, dignity: -2, hygiene: -1 }
+
+        }
+    ]
+},
+
+// NEW SCENE: Nemesis - Physical Attack (HP Check)
+"nemesis_attack": {
+    text: stats.hp >= 8
+        ? `Ignoring the exhaustion from the morning, you surge forward with surprising energy. You catch Stu completely off guard with a solid shove that sends him staggering. He bellows in frustrated rage as you power past him into the gym. You made it through, bruised but triumphant.`
+        : `You try to land a quick punch, but your low **HP** makes your move slow and pathetic. Stu merely grabs your outstretched arm, twists it hard, and shoves you into a row of lockers. Your pride is broken, and so is your spirit. You crawl into the gym, nursing a very sore elbow.`,
+    choices: [
+        {
+            text: "Proceed to Gym Class.",
+            nextSceneId: "gym_class",
+            // If HP is high, you gain dignity. If low, you lose HP and dignity.
+        }
+    ]
+},
+
+// NEW SCENE: Nemesis - Insult (Dignity Check)
+"nemesis_insult": {
+    text: stats.dignity >= 8
+        ? `You draw yourself up to your full height and speak calmly "I aplaud your parents. They knew what they were doing when they named Stu Pidd, stupid." The insult is so specific and delivered with such icy **Dignity** that Stu is genuinely stunned. He momentarily loses his menacing composure, and the nearby students roar with laughter. You seize the moment of confusion and slip past the stunned group.`
+        : `You open your mouth to deliver a cutting insult, but your low **Dignity** causes your voice to squeak, and the best you can manage is, "Y-you smell like an old sock!" Stu doesn't even bother to punch you. He just laughs—a deep, crushing, pitying laugh—before flicking your ear and letting you stumble past, utterly humiliated.`,
+    choices: [
+        {
+            text: "Proceed to Gym Class.",
+            nextSceneId: "gym_class",
+            // If Dignity is high, you gain massive Dignity. If low, you lose it severely.
+        }
+    ]
+},
+
+// NEW SCENE: Nemesis - Squeeze (Hygiene Check)
+"nemesis_squeeze": {
+    text: stats.hygiene <= 3
+        ? `You drop your shoulder and attempt to squeeze between Stu and the wall. Your low **Hygiene** is your weapon. Stu is forced to take a lungful of your 'Egg, Beans, and Sardine combo' aroma. He recoils instantly, his eyes watering, clutching his throat and gagging. "What IS that?!" he coughs, creating a large, clear lane for you to sprint past.`
+        : `You attempt to wedge your body past him, but your relatively high **Hygiene** provides no defensive barrier. Stu simply shoves you back with a massive forearm, sending you sprawling into a garbage can. "Not even worth getting my hands dirty," he growls. You emerge smelling of trash and failure.`,
+    choices: [
+        {
+            text: "Proceed to Gym Class.",
+            nextSceneId: "gym_class",
+            // If Hygiene is low (stinky), you win a tactical victory. If high, you fail badly.
+        }
+    ]
+},
+
+// MODIFIED SCENE: gym_class (Setup for the Accident)
+"gym_class": {
+    text: `You change into your mandatory, poorly-fitting gym uniform. The coach who had just lost most of his ownings after a nasty divorce looked at you and the other students with fury, instructing you to run laps until your legs fall off. \nWhat do you do?`,
+    choices: [
+        {
+            text: "Try your best to jog properly (HP Check).",
+            nextSceneId: "after_warmup_jog",
+            statChange: stats.hp >= 8 ? { hp: 1, hygiene: -1 } : { hp: -2, dignity: -1, hygiene: -2 }
+        },
+        {
+            text: "Pretend to trip and feign an injury (Dignity Check).",
+            nextSceneId: "after_warmup_trip",
+            statChange: stats.dignity >= 8 ? { hp: 1 } : { hp: -1, dignity: -2, hygiene: -2 }
+        },
+        {
+            text: "Walk slowly, trying to hide in the back (Hygiene Check).",
+            nextSceneId: "after_warmup_walk",
+            statChange: stats.hygiene <= 3 ? { dignity: 1 } : { hp: -1, dignity: -1, hygiene: -2 }
+        }
+    ]
+},
+
+// NEW SCENE: after_warmup_jog (HP Check)
+"after_warmup_jog": {
+    text: stats.hp >= 8
+        ? `You power through the full five minutes, your **HP** holding strong. You barely break a sweat and finish the run feeling surprisingly vital. The coach, spotting your competence, merely grunts and moves on to yelling at someone else.`
+        : `Your low **HP** makes the light jog feel like a marathon. By the end, you're winded, your lungs burning. You finish exhausted and slightly humiliated.`,
+    choices: [
+        {
+            text: "Recover and wait for the next disaster.",
+            nextSceneId: "after_warmup_next"
+        }
+    ]
+},
+
+// NEW SCENE: after_warmup_trip (Dignity Check)
+"after_warmup_trip": {
+    text: stats.dignity >= 8
+        ? `You execute a flawless, dramatic stumble and clutch your ankle with Oscar-worthy pain. Your high **Dignity** allows you to pull off the deceit convincingly. The coach glares, but seeing the *sheer quality* of your performance, he just snaps, "Go sit on the bench and don't breathe too loudly!" Victory through superior acting.`
+        : `You try to trip, but you stumble too hard, genuinely face-planting in front of the entire class. It's so pathetic that the coach assumes you're just clumsy, not injured. "Get up, buttercup! That was the saddest display I've ever seen! Now double-time it!" You must continue running, now with a scraped knee and zero dignity.`,
+    choices: [
+        {
+            text: "Wait for the next disaster.",
+            nextSceneId: "after_warmup_next"
+        }
+    ]
+},
+
+// NEW SCENE: after_warmup_walk (Hygiene Check)
+"after_warmup_walk": {
+    text: stats.hygiene <= 3
+        ? `You walk at a snail's pace, letting the crowd of more enthusiastic students buffer you. Because your **Hygiene** is so low, a small, invisible cloud of 'essence' surrounds you. No one wants to jog close to you, and the coach avoids getting near enough to yell at you directly. You escape the run undetected.`
+        : `You attempt to walk, but your relative cleanliness means other students keep jogging near you. The coach spots you immediately. "Hey, *you* in the poorly-fitting uniform! I said JOG! Are you deaf *and* lazy?!" He forces you to run the remaining laps with him jogging right beside you.`,
+    choices: [
+        {
+            text: "Wait for the next disaster.",
+            nextSceneId: "after_warmup_next"
+        }
+    ]
+},
+
+"after_warmup_next": {
+    text: `Luckily, the rest of the afternoon was uneventful, you could sense the end of the school day approaching.\n Can you survive the journey back home and finish this story?.`,
+    choices: [
+        {
+            text: "Only one way to find out.",
+            nextSceneId: "way_back_home",
+        },
+        
+    ]
+},
+// NEW SCENE: way_back_home (The Journey)
+"way_back_home": {
+    text: `The final bell screams its freedom song. You exit the school and step onto the cracked sidewalk. The journey home is a gauntlet of loose dogs, hostile elementary schoolers, and existential dread. A final challenge awaits.`,
+    choices: [
+        {
+            text: "Take the shortcut through the dark alley (Hygiene Check: The stealth option).",
+            nextSceneId: "alley_shortcut",
+            statChange: stats.hygiene <= 3 ? { hp: 1 } : { hp: -2, dignity: -2 }
+        },
+        {
+            text: "Brave the main street, weaving through traffic (HP Check: The endurance option).",
+            nextSceneId: "main_street_traffic",
+            statChange: stats.hp >= 8 ? { dignity: 1 } : { hp: -3, hygiene: -1 }
+        },
+        {
+            text: "Attempt a detour through the fancy neighborhood (Dignity Check: The social option).",
+            nextSceneId: "fancy_detour",
+            statChange: stats.dignity >= 8 ? { hp: 1 } : { dignity: -2, hygiene: -1 }
+        }
+    ]
+},
+
+// NEW SCENE: alley_shortcut (Hygiene Check)
+"alley_shortcut": {
+    text: stats.hygiene <= 3
+        ? `You enter the dark, damp alleyway. Your low **Hygiene** works as camouflage. You blend seamlessly with the environment—the damp garbage, the overflowing dumpster. Even the territorial stray cats ignore you, sensing a kindred, unwashed spirit. You emerge on the other side, faster and totally unnoticed.`
+        : `You take the alley, but your lack of proper street filth makes you stand out. A feral dog, alerted by your comparatively clean scent, jumps out and barks aggressively. You have to sacrifice your dignity (and a shoe) to escape, sprinting until you hit the main road.`,
+    choices: [
+        {
+            text: "Keep moving toward home.",
+            nextSceneId: "end_of_day_report"
+        }
+    ]
+},
+
+// NEW SCENE: main_street_traffic (HP Check)
+"main_street_traffic": {
+    text: stats.hp >= 8
+        ? `The main street is a madhouse, but your high **HP** allows you to move with surprising grace. You execute a series of athletic, parkour-like leaps over concrete barriers and time a gap in the traffic perfectly, crossing four lanes in a single, adrenaline-fueled dash. You feel a surge of energy.`
+        : `You try to weave through traffic, but your exhaustion catches up to you. You trip over a loose curb right in front of a bus, forcing it to slam on its brakes with a screech. The driver unleashes a stream of profanity as you scramble across the street, thoroughly shaken and minorly injured.`,
+    choices: [
+        {
+            text: "Keep moving toward home.",
+            nextSceneId: "end_of_day_report"
+        }
+    ]
+},
+
+// NEW SCENE: fancy_detour (Dignity Check)
+"fancy_detour": {
+    text: stats.dignity >= 8
+        ? `You take the detour. The houses are pristine, the lawns manicured. A neighborhood watch car slows down to observe you. Your high **Dignity** allows you to meet the driver's gaze calmly, radiating an air of unassailable, even if misleading, importance. The driver, confused by your confidence, waves and drives on. You pass through without incident.`
+        : `You attempt to walk through the rich neighborhood. A woman, watering her prize-winning petunias, takes one look at your shame-ridden, poorly-uniformed form. She picks up her phone and dials a number "Hello, There's a creepy looking person hanging around the neighbourhood." You realize you do not belong and must quickly retreat before the police show up.`,
+    choices: [
+        {
+            text: "Keep moving toward home.",
+            nextSceneId: "end_of_day_report"
+        }
+    ]
+},
+
+
+
+// NEW SCENE: end_of_day_report (The End)
+"end_of_day_report": {
+    text: `You have made it home. You collapse onto your bed, the smell of your uniform, the exhaustion in your bones, and the shame of the day's social blunders finally weighing you down. You survived the day, but the question remains: Can you survive tomorrow? \n\n**-- END OF PART I -- Part two coming soon, maybe.**`,
+    choices: [
+        {
+            text: "View Final Stats.",
+            nextSceneId: "view_stats" // A placeholder for the final screen
+        }
+    ]
+}
+
 };
 
 
@@ -551,6 +1033,9 @@ export function ContextProvider({children}){
 
     function handleChoice(choiceObject){
       const { nextSceneId, statChange } = choiceObject; 
+      if(nextSceneId==='view_stats'){
+        generateEndOfDayReport()
+      }
 
       if (statChange) {
         handleStatChange(statChange);
@@ -572,14 +1057,145 @@ export function ContextProvider({children}){
 
     function restart(){
       setCurrSceneId('start_scene')
-      setStats({hp:10, dignity:10, hygiene:0})
+      setStats({hp:10, dignity:10, hygiene:10})
+      setLastStatChange(null)
       navigate('/render')
     }
     
-    
+    /**
+ * Function to generate the final end-of-day report and update state.
+ * Assumes 'stats' object has properties: hp, dignity, hygiene.
+ * Assumes 'setReport' is a React state setter function.
+ */
+/**
+ * Function to generate the final end-of-day report and update state.
+ * Uses specific numerical checks to ensure all report titles are plausible across the 0-10 stat range.
+ */
+function generateEndOfDayReport() {
+    let reportTitle = "The Average Survivor";
+    let reportDescription = "You made it home. Nothing spectacular happened, good or bad, and your stats are perfectly balanced. A true middle-of-the-road experience. Don't worry, tomorrow will be just as unremarkable.";
+    let reportImgURL = '';
+    // Variable to hold the user-readable condition string
+    let reportCondition = 'Balanced Stats';
+
+    // --- Define Thresholds (More granular for dynamic outcomes) ---
+    const VERY_LOW = 2; // Extremely bad
+    const LOW = 4;      // Bad
+    const MID = 6;      // Okay/Average
+    const HIGH = 8;     // Good
+    const VERY_HIGH = 10; // Perfect
+
+    // --- HIGHLY SPECIFIC COMBINED CHECKS (Priority 1) ---
+
+    // The Unchallenged Legend: All EXTREMELY HIGH (e.g., all 9 or 10)
+    if (stats.hp >= HIGH && stats.dignity >= HIGH && stats.hygiene >= HIGH) {
+        reportTitle = "The Unchallenged Legend";
+        reportDescription = "You didn't just survive the day; you **dominated** it. You are physically immaculate, socially flawless, and effortlessly ascended the high school hierarchy. You are simply too cool for this game. **Go find a better life; your story here is over.**";
+        reportImgURL = 'gigachad.webp';
+        reportCondition = 'HP, Dignity, and Hygiene are ALL HIGH (8+)';
+    }
+    // The Absolute Zero: All EXTREMELY LOW (e.g., all 0, 1, or 2)
+    else if (stats.hp <= VERY_LOW && stats.dignity <= VERY_LOW && stats.hygiene <= VERY_LOW) {
+        reportTitle = "The Absolute Zero";
+        reportDescription = "Every stat is at rock bottom. You are a complete disaster—physically exhausted, mentally crushed, and biologically offensive. You didn't survive the day; you were *tolerated*. **Congratulations, you are the school's official pity project.**";
+        reportImgURL = 'shrek.webp';
+        reportCondition = 'HP, Dignity, and Hygiene are ALL VERY LOW (<= 2)';
+    }
+    // The Glorious Juggernaut: HP and Dignity HIGH, Hygiene just OK
+    else if (stats.hp >= HIGH && stats.dignity >= HIGH && stats.hygiene >= MID) {
+        reportTitle = "The Victorious Bully";
+        reportDescription = "You are exhausted from winning. Every confrontation was a decisive victory, and your ego is soaring. You are the protagonist, and everyone else is just set dressing. **You’re probably going to demand the lunch lady give you extra dessert.**";
+        reportImgURL = 'buffedCat.jpeg';
+        reportCondition = 'High HP & High Dignity, with Mid Hygiene (6+)';
+    }
+    // The Arrogant Trash Fire: Dignity VERY HIGH, Hygiene VERY LOW
+    else if (stats.dignity >= HIGH && stats.hygiene <= LOW) {
+        reportTitle = "The Arrogant Trash Fire";
+        reportDescription = "You are a potent mix of high self-regard and low personal maintenance. Your massive **Dignity** dictates that your terrible smell is actually a 'bold, earthy cologne.' You insulted everyone who commented on it, then successfully bulldozed your way home. **You are objectively a mess, but a powerful mess.**";
+        reportImgURL = 'lordlyTrashcan.webp';
+        reportCondition = 'High Dignity (8+) and Low Hygiene (<= 4)';
+    }
+    // The Stinking Tank: HP HIGH, Hygiene VERY LOW
+    else if (stats.hp >= HIGH && stats.hygiene <= VERY_LOW) {
+        reportTitle = "The Stinking Tank";
+        reportDescription = "You are physically resilient, but your stench is a weapon of mass repulsion. You ran every lap and won every skirmish by being **too disgusting to touch**. An effective, if extremely lonely, strategy that will require a HAZMAT team for cleanup.";
+        reportImgURL = 'buffedShrek.jpeg';
+        reportCondition = 'High HP (8+) and Very Low Hygiene (<= 2)';
+    }
+    // The Pristine Doormat: Dignity VERY LOW, Hygiene HIGH
+    else if (stats.dignity <= LOW && stats.hygiene >= HIGH) {
+        reportTitle = "The Pristine Doormat";
+        reportDescription = "You are clean but utterly spineless. You avoided confrontation and relied on your cleanliness to keep people from actively hating you. You have the squeaky-clean look of a victim waiting to happen. **Your clothes smell great, but your soul is stained with cowardice.**";
+        reportImgURL = 'showerCat.jpeg';
+        reportCondition = 'Low Dignity (<= 4) and High Hygiene (8+)';
+    }
+    // The Battered Ego: HP and Dignity VERY LOW, Hygiene doesn't matter
+    else if (stats.hp <= VERY_LOW && stats.dignity <= LOW) {
+        reportTitle = "The Battered Ego";
+        reportDescription = "You are a wreck. Your body is exhausted, and your mind is mush. You failed every physical and social challenge. You don't have enough energy left to wallow in self-pity, so you're just going to lie there and quietly contemplate your failures. **A deeply unsatisfying end to a miserable day.**";
+        reportImgURL = 'bulliedFrog.jpeg';
+        reportCondition = 'Very Low HP (<= 2) and Low Dignity (<= 4)';
+    }
+
+    // --- SINGLE STAT CHECKS (Priority 2 - Catch all remaining high/low extremes) ---
+
+    // Low Checks (Use MID as the cut-off for a major flaw)
+    else if (stats.hp <= LOW) {
+        reportTitle = "The Walking Bruise";
+        reportDescription = "You arrived home as a human tapestry of minor injuries. Every nerve ending is screaming. You are too weak to even remove your shoes. **Your body has filed a grievance against your spirit.**";
+        reportImgURL = 'weak.jpeg';
+        reportCondition = 'Low HP (<= 4)';
+    }
+    else if (stats.dignity <= LOW) {
+        reportTitle = "The Embodiment of Shame";
+        reportDescription = "Your **Dignity** is so low it registers as a gravitational anomaly. You are now scientifically indistinguishable from a sentient doormat. **You will be thinking about that one awkward thing you said in 7th grade for the rest of the week.**";
+        reportImgURL = 'pathetic.jpeg';
+        reportCondition = 'Low Dignity (<= 4)';
+    }
+    else if (stats.hygiene <= LOW) {
+        reportTitle = "The Biohazard Blob";
+        reportDescription = "You are covered in a toxic film composed of sweat, exhaust, and construction filth. The *smell* arrived 30 seconds before you did. **Your clothes must be burned. You may need to be hosed down.**";
+        reportImgURL = 'shower.jpeg';
+        reportCondition = 'Low Hygiene (<= 4)';
+    }
+
+    // High Checks (Use HIGH as the cut-off for a major advantage)
+    else if (stats.hp >= HIGH) {
+        reportTitle = "The Unsinkable Anomaly";
+        reportDescription = "Against all logic, you are energized. Your relentless **HP** allowed you to absorb every blow without losing momentum. You are now considering a light 10K run. **You are a biological bulldozer with unearned stamina.**";
+        reportImgURL = 'buffedMona.jpeg';
+        reportCondition = 'High HP (8+)';
+    }
+    else if (stats.dignity >= HIGH) {
+        reportTitle = "The Egotistical Titan";
+        reportDescription = "Your **Dignity** has achieved critical mass. You are convinced the entire school day was an elaborate test of your character, which you passed flawlessly. **You close your eyes, radiating an unearned sense of moral superiority.**";
+        reportImgURL = 'vultouri.jpeg';
+        reportCondition = 'High Dignity (8+)';
+    }
+    else if (stats.hygiene >= HIGH) {
+        reportTitle = "The Sparkling Target";
+        reportDescription = "Despite the chaos, you remained bafflingly clean. Every piece of filth in your house is now magnetically drawn to you. **You are doomed to smell good, which seems to be the greatest handicap of all.**";
+        reportImgURL = 'Mr_Clean.jpeg';
+        reportCondition = 'High Hygiene (8+)';
+    }
+
+    // --- Final State Update ---
+    setReport({
+        title: reportTitle,
+        description: reportDescription,
+        finalStats: stats,
+        imgURL: reportImgURL,
+        // Passing the readable condition
+        condition: reportCondition
+    });
+    // Assuming 'navigate' is your routing function (e.g., from react-router-dom)
+    navigate('/report');
+}
+
+
 
     return(
-        <Context.Provider value={{script, currSceneId, setCurrSceneId, stats, handleChoice, restart, handleStatChange, lastStatChange}}>
+        <Context.Provider value={{script, currSceneId, setCurrSceneId, stats, handleChoice, restart, handleStatChange, lastStatChange, report}}>
             {children}
         </Context.Provider>
     )

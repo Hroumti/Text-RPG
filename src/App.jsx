@@ -4,8 +4,9 @@ import { ContextProvider } from "./components/context"
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import StatBar from "./components/statBar";
 import Home from "./components/home";
+import Report from "./components/report";
 import './App.css'
-
+import AllReportsComponent from "./components/reportsInspect";
 function App() {
   
 
@@ -18,12 +19,13 @@ function App() {
             <Route path={'/'} element={<Home/>}/>
             <Route path={'/render'} element={<Render/>}/>
             <Route path={'/notice'} element={<Notice/>}/>
+            <Route path={'/report'} element={<Report/>}/>
 
           </Routes>
         </div>
       </ContextProvider>
     </BrowserRouter>
-    
+
   )
 }
 
