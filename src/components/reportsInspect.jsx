@@ -59,7 +59,7 @@ const allReports = [
     {
         title: "The Biohazard Blob",
         description: "You are covered in a toxic film composed of sweat, exhaust, and construction filth. The *smell* arrived 30 seconds before you did. Your clothes must be burned. You may need to be hosed down.",
-        imgURL: 'shower.jpeg',
+        imgURL: 'stinker.jpeg',
         condition: "Hygiene <= LOW (Single Stat Check)"
     },
     {
@@ -114,9 +114,7 @@ const AllReportsComponent = () => {
                                 alt={`Image for ${report.title}`} 
                                 
                             />
-                            <p style={{ fontSize: '10px', color: '#666' }}>
-                                (Image Placeholder: {report.imgURL})
-                            </p>
+                           
                         </div>
                     )}
                     <p style={{ lineHeight: '1.6' }}>

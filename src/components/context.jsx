@@ -40,30 +40,46 @@ export function ContextProvider({children}){
         choices: [
             {
                 text: "Scrambled Eggs (A basic level of stench).",
-                nextSceneId: "leave_house",
+                nextSceneId: "breakfast",
                 statChange: { hygiene: -1 }
             },
             {
                 text: "Beans (Nuclear fuel).",
-                nextSceneId: "leave_house",
+                nextSceneId: "breakfast",
                 statChange: { hygiene: -2 }
             },
             {
-                text: "A can of sardines (The maritime assault).",
-                nextSceneId: "leave_house",
+                text: "A can of sardines (Budget chemical weapon).",
+                nextSceneId: "breakfast",
                 statChange: { hygiene: -3 }
             },
             {
                 text: "The Full Combo: Eggs, Beans, and Sardines (Biohazard breakfast).",
-                nextSceneId: "leave_house",
+                nextSceneId: "breakfast",
                 statChange: { hygiene: -6 }
             },
             {
                 text: "You close the fridge. It's too much effort. The classic tea, bread, and olive oil it is.",
-                nextSceneId: "leave_house",
+                nextSceneId: "breakfast",
             }
         ]
     },
+    "breakfast": {
+    // Note: The stats.hygiene value here reflects the new value after the statChange from the previous scene.
+    text: stats.hygiene === 10
+        ? `You settle for a simple piece of toast and tea. It's bland, but effective. You leave the kitchen feeling completely un-smelly, which, for you, is a major win.`
+        : stats.hygiene >= 8
+            ? `You quickly consume your stinky breakfast of choice. The smell lingers in the kitchen, but your own scent only suffers a minor drop. You're ready to head out, slightly less appealing than before.`
+            : stats.hygiene >= 5
+                ? `The intense aroma of your morning meal permeates your clothing and hair. You can already sense the judgmental stares of your classmates. Your stomach is full, but your public reputation is already suffering.`
+                : `The moment you finish the **Biohazard Breakfast**, your mother walks in, takes one whiff, and immediately evacuates the premises. You are now a walking, talking chemical spill. You're energetic, but you are not welcome in society.`,
+    choices: [
+        {
+            text: "Leave the house.",
+            nextSceneId: "leave_house",
+        }
+    ]
+},
 
     "leave_house":{
         text: `Having survived breakfast, you escape the house. You reach a major intersection, a crossroads of consequence. Do you face the public or seek shadow?`,
@@ -90,6 +106,8 @@ export function ContextProvider({children}){
             {
                 text: "Control yourself and apologize profusely.",
                 nextSceneId: "apologise",
+                statChange: {dignity:1}
+
             },
             {
                 text: "Stand there, mouth slightly ajar, staring blankly.",
@@ -246,7 +264,7 @@ export function ContextProvider({children}){
                 text: "Wake up and prepare for school",
                 nextSceneId: "prepare_for_school",
             }, {
-                text: "Zzzzzzz. Keep on dreaming, champ. I'm sure nothing bad is gonna happen",
+                text: "Zzz (Snoring sounds). Keep on dreaming, champ. I'm sure nothing bad is gonna happen",
                 nextSceneId: "good_beating"
             }
         ]
@@ -262,7 +280,7 @@ export function ContextProvider({children}){
             {
                 text: "Beg.",
                 nextSceneId:"beg",
-                statChange: {hp:-2, dignity: -4},
+                statChange: {hp:-2, dignity: -2},
             },
             {
                 text: "Thrash around",
@@ -280,7 +298,7 @@ export function ContextProvider({children}){
         ]
     },
     "beg":{
-        text: `After your father vented his anger, you walked out of the room to find your brother laughing at you. After getting beaten up, you had no choice but to prepare for school.`,
+        text: `After your father vented his anger, you walked out of the room to find your brother laughing at you, leaving you infuriated and ashamed. After getting beaten up, you had no choice but to prepare for school.`,
         choices:[
             {
                 text:`Prepare for school`,
@@ -305,17 +323,17 @@ export function ContextProvider({children}){
 
     // NEW SCENE: The Alleys
     "alleys": {
-        text: `You slip into the dark, refuse-scented alleys, hoping for a quicker, quieter route. Halfway down, you find a faded $50 bill crumpled beneath a dumpster. But just as you reach for it, a mangy stray dog lunges at your hand.`,
+        text: `You slip into the dark, refuse-scented alleys, hoping for a quicker, quieter route. Halfway down, you find a faded 50 dirhams bill crumpled beneath a dumpster. But just as you reach for it, a mangy stray dog lunges at your hand.`,
         choices: [
             {
                 text: "Snatch the money and run.",
                 nextSceneId: "alleys_win",
-                statChange: { hp: -1 } // The dog takes a nip
+                statChange: { hp: -2 } // The dog takes a nip
             },
             {
                 text: "Try to befriend the dog with an old piece of bread.",
                 nextSceneId: "alleys_fail",
-                statChange: { dignity: -3 } // You look ridiculous
+                statChange: { dignity: -2 } // You look ridiculous
             }
         ]
     },
@@ -333,7 +351,7 @@ export function ContextProvider({children}){
 
     // NEW SCENE: Alleys - Failure
     "alleys_fail": {
-        text: `The dog just stares at you, utterly unimpressed by your offering and your strange demeanor. It barks once, grabs the 50 dirhams bill itself (it's surprisingly well-trained), and trots off. You are left alone, standing foolishly with a handful of stale bread.`,
+        text: `The dog just stares at you, utterly unimpressed by your offering and your strange demeanor. It barks once, grabs the 50 dirhams bill itself (it's surprisingly smart. Smarter than you at least, moron), and trots off. You are left alone, standing foolishly with a handful of stale bread.`,
         choices: [
             {
                 text: "Continue toward school.",
@@ -341,14 +359,7 @@ export function ContextProvider({children}){
             }
         ]
     },
-    
-    
 
-    
-
-    
-
-    // NEW SCENE: The End of the Road (Placeholder to continue or end the story)
     "continue_school_road":{
         text: stats.hp<10&&stats.hygiene<=8?`You finally reach the corner before the school. You're wounded, possibly smelly, but you made it. Do you go to class, or do you stop at the local kiosk for a questionable energy drink?`:`You finally reach the corner before the school.\n Do you go to class, or do you stop at the local kiosk for a questionable energy drink?`,
         choices:[
@@ -378,19 +389,19 @@ export function ContextProvider({children}){
 
     // NEW SCENE: Thrash Around Consequence (The current thrash around leads to a loop with a massive HP loss, so this is the final resolution)
     "thrash_around":{
-        text: `While thrashing around while getting beaten up, you stumbled onto the coat hanger, and your jacket fell to the ground. A pack of cigarette fell from the pocket and is now resting on the carpet. Your father stops beating you, his eyes wide with horror at the cigarette. He stares at you with quiet fury. What do you do?.`,
+        text: `While thrashing around while getting beaten up, you stumbled onto the coat hanger, and your jacket fell to the ground. A pack of cigarette fell from the pocket and is now resting on the carpet. Your father stops beating you, his eyes wide with horror at the cigarette pack. He stares at you with quiet fury. What do you do?.`,
         choices:[
             {
                 text:`There's nothing you can do (You're cooked).`,
                 nextSceneId: "game_over",
-                statChange: {hp:-100, dignity:-3}
+                statChange: {hp:-10, dignity:-3}
             }
         ]
     },
 
     // NEW SCENE: Game Over
     "game_over": {
-        text: `The domestic incident caused by the hidden cigarette finished you. You are now a statistic..`,
+        text: `The domestic incident caused by the hidden cigarette pack finished you. You are now nothing more than a statistic..`,
         choices: [
             {
                 text: "RIP",
@@ -447,7 +458,7 @@ export function ContextProvider({children}){
     ]:[
         {
             text: "Blame it on the chair (The Farouq way).",
-            nextSceneId: "chair_fart",
+            nextSceneId: stats.dignity>=5?"chair_fart1":"chair_fart2",
             // If you failed (high Hygiene), you look shameful
             statChange:stats.dignity>=5? { dignity: -4 }:null
         },
@@ -459,10 +470,19 @@ export function ContextProvider({children}){
         }
     ]
 },
-"chair_fart": {
-    text: lastStatChange=={dignity:-4}
-        ? `"It wasn't me! It was the chair, I swear!" you hiss, pointing a shaking finger at the innocent piece of furniture. The teacher and all 30 students stare. The wooden chair, in its silent solidarity, chooses that exact moment to let out a loud, protesting creak, as if deeply offended by your blatant betrayal. You sink low, realizing even inanimate objects have more dignity than you do. `
-        : `You try to blame the chair with a theatrical sweep of your arm. "Bad chair!" you declare, trying to deflect the noxious cloud. No one laughs. No one glares. The students just continue to exist, as if this is simply a mundane part of your daily routine—like breathing, or failing. The non-reaction is crushing: your reputation is so low that even a loud, stinky public blunder is met with absolute, soul-destroying apathy. You realize you've reached a new low when your own flatulence is considered the baseline expectation.`,
+"chair_fart1": {
+    text: `"It wasn't me! It was the chair, I swear!" you hiss, pointing a shaking finger at the innocent piece of furniture. The teacher and all 30 students stare. The wooden chair, in its silent solidarity, chooses that exact moment to let out a loud, protesting creak, as if deeply offended by your blatant betrayal. You sink low, realizing even inanimate objects have more dignity than you do. `,
+    choices: [
+        {
+            text: "Continue",
+            nextSceneId: "class_endure",
+            
+        },
+        
+    ]
+},
+"chair_fart2": {
+    text: `You try to blame the chair with a theatrical sweep of your arm. "Bad chair!" you declare, trying to deflect the noxious cloud. No one laughs. No one glares. The students just continue to exist, as if this is simply a mundane part of your daily routine—like breathing, or failing. The non-reaction is crushing: your reputation is so low that even a loud, stinky public blunder is met with absolute, soul-destroying apathy. You realize you've reached a new low when your own flatulence is considered the baseline expectation.`,
     choices: [
         {
             text: "Continue",
@@ -475,9 +495,9 @@ export function ContextProvider({children}){
 "act_cool": {
     text: stats.dignity>=9
         ? `"The offensive noise tears through the quiet classroom, drawing every eye to your vicinity. Instead of reacting with panic, your high Dignity takes over. You slowly turn your gaze to the student sitting behind you, holding their eyes with an expression of profound, pitying disappointment. "A truly pathetic effort, Mouad," you say, your voice low and even. "I expected better." The class immediately shifts their focus to the terrified student you just blamed. Your confidence is so absolute, no one dares to suggest the smell is emanating from the source of the accusation—you. `
-        : `The foul noise is immediate and undeniable. Your low Dignity scores make you desperate, so you try the bold, confident play: you slowly turn your gaze to the student sitting behind you, "Johnson." "A truly pathetic effort, I expected better," you attempt to sneer.\m
+        : `The foul noise is immediate and undeniable. Your low Dignity scores make you desperate, so you try the bold, confident play: you slowly turn your gaze to the student sitting behind you, "Mouad." "A truly pathetic effort, I expected better," you attempt to sneer.\m
 
-        The entire class just stares back at you with dead eyes, not believing your story for a second. Your face, red with shame and effort, betrays the truth that your Dignity was never high enough to pull off such a powerful lie. The only person suffering more than you is poor Johnson, who now has to endure the class thinking he's friends with you.`,
+        The entire class just stares back at you with dead eyes, not believing your story for a second. Your face, red with shame and effort, betrays the truth that your Dignity was never high enough to pull off such a powerful lie. The only person suffering more than you is poor Mouad, who now has to endure the class thinking he's friends with you.`,
     choices: [
         {
             text: "Continue",
@@ -516,7 +536,7 @@ export function ContextProvider({children}){
         {
             text: "Douse self in soap/water (Hygiene focused).",
             nextSceneId: "bathroom_douse",
-            statChange: { hygiene: -2 }
+            statChange: { hygiene: 1 }
         }
     ]
 },
@@ -535,7 +555,7 @@ export function ContextProvider({children}){
 
 // NEW SCENE: Bathroom Douse
 "bathroom_douse": {
-    text: `You frantically scrub yourself with industrial-grade hand soap, trying to kill the smell. It temporarily replaces the stench of sardines with the sharp, artificial odor of 'Blue Mountain Dew,' but you feel lighter.`,
+    text: `You frantically scrub yourself with industrial-grade hand soap, trying to kill the smell. It temporarily replaces the stench of whatever you had for breakfast with the sharp, odor of low quality soap, but you feel lighter.`,
     choices: [
         {
             text: "Head to class.",
@@ -545,14 +565,14 @@ export function ContextProvider({children}){
     ]
 },
 "second_period": {
-    text: `You arrive in the second period, English Literature. The teacher, an ancient woman named Ms. Bighrdayn, slowly pushes her glasses up and announces, "Pop quiz. Analyze this quote from *Anita bath*." Your mind immediately goes blank.`,
+    text: `You arrive in the second period, English Literature. The teacher, an ancient woman named Ms. Bighrdayn, slowly pushes her glasses up and announces, "Pop quiz. Analyze this quote from the famous writer *Anita bath*." Your mind immediately goes blank.`,
     choices: [
         {
             text: "Feign a cough and attempt to discreetly copy from your neighbor.",
             // HP Check: If HP is low (fatigue), cheating is risky.
             nextSceneId: stats.hp <= 6 ? "quiz_cheat_fail" : "quiz_cheat_success",
             // Stat change occurs here immediately upon choice:
-            statChange: stats.hp <= 6 ? { dignity: -3 } : { dignity: 2 }
+            statChange: stats.hp <= 6 ? { dignity: -3 } : { dignity: 1 }
         },
         {
             text: "Write the first coherent thing that comes to mind (The Bruteforce Method).",
@@ -594,7 +614,7 @@ export function ContextProvider({children}){
 
 // NEW SCENE: Bruteforce Success
 "quiz_bruteforce_success": {
-    text: `Your argument is absurd (you wrote about a white shark), but your tolerable scent and effort prevent the teacher from grading out of spite. Ms. Bighrdayn awards you a sympathetic **'C-'** for originality. You barely passed.`,
+    text: `Your argument is absurd, but your tolerable scent and effort prevent the teacher from grading out of spite. Ms. Bighrdayn awards you a sympathetic **'C-'** for originality. You barely passed.`,
     choices: [
         {
             text: "Reluctantly move on.",
@@ -649,7 +669,7 @@ export function ContextProvider({children}){
 
 // MODIFIED SCENE: lunch_scene (The next major decision point)
 "lunch_scene": {
-    text: `The cafeteria is a deafening, chaotic mess, smelling vaguely of floor wax and overcooked mystery meat. You clutch your tray (or perhaps just a stale piece of bread). Where do you sit?`,
+    text: `The cafeteria is a deafening, chaotic mess, smelling vaguely of floor wax and overcooked mystery meat. You clutch your tray.\n Where do you sit?`,
     choices: [
         {
             text: "The **Cool Kids' Table** (High risk, high reward).",
@@ -698,7 +718,7 @@ export function ContextProvider({children}){
 
 // NEW SCENE: Lunch - Bold Statement (Dignity Check)
 "lunch_bold_statement": {
-    text: `You clear your throat and announce, "This food is an insult! I'm pretty sure the cook just used the toilet water to cook the beans!"`,
+    text: "You clear your throat and announce, 'This food is an insult! I'm pretty sure the chef just boiled a stray dog in the communal bathroom water!'",
     choices: [
         {
             // Dignity success: The confidence (even if misplaced) earns a grudging laugh.
@@ -733,7 +753,7 @@ export function ContextProvider({children}){
 
 // NEW SCENE: Lunch - Stand and Stink (Hygiene Check)
 "lunch_stand_and_stink": {
-    text: `You stand silently, hoping your presence will be accepted through osmosis. The group's laughter gradually dies down.`,
+    text: `You stand silently, hoping your presence will be accepted. The group's laughter gradually dies down.`,
     choices: [
         {
             // Hygiene success: You're clean enough that the *idea* of you isn't repulsive.
@@ -757,7 +777,7 @@ export function ContextProvider({children}){
 
 // NEW SCENE: Stand and Stink Fail
 "stand_stink_fail": {
-    text: `The cool kids fall silent. The leader, slowly leans back and gestures vaguely toward you with a single fry. "Listen," he says, sounding genuinely weary. "We're going to need you to move. Even a skunk would be disgusted but the toxins you're emitting. You are a biological risk to all living beings. Retreat."`,
+    text: `The cool kids fall silent. The leader, slowly leans back and gestures vaguely toward you with a single fry. "Listen," he says, sounding genuinely weary. "We're going to need you to move. Even a skunk would be disgusted by the toxic cloud you're emitting. You are a biological risk to all living beings. Go away."`,
     choices: [
         {
             text: "Retreat in shame.",
@@ -794,7 +814,7 @@ export function ContextProvider({children}){
 
 // NEW SCENE: Sit Uninvited Fail
 "sit_uninvited_fail": {
-    text: `Before your rear even touches the seat, two of the biggest cool kids push your tray—and your body—backwards. You crash to the floor in a pathetic tangle of limbs and spilled mystery meat. The whole cafeteria laughs. "Get lost, creep!" one shouts. You are physically and socially assaulted.`,
+    text: `Before you even sit properly, two of the biggest cool kids push your tray—and your body—backwards. You crash to the floor in a pathetic tangle of limbs and spilled mystery meat. The whole cafeteria laughs. "Get lost, creep!" one shouts. You are physically and socially assaulted.`,
     choices: [
         {
             text: "Crawl away.",
@@ -833,7 +853,7 @@ export function ContextProvider({children}){
         {
             text: "Just try to squeeze past him (Hygiene Check: The disgusting option).",
             nextSceneId: "nemesis_squeeze",
-            statChange: stats.hygiene <= 3 ? { dignity: 1 } : { hp: -1, dignity: -2, hygiene: -1 }
+            statChange: stats.hygiene <= 3 ? null : { hp: -1, dignity: -2, hygiene: -1 }
 
         }
     ]
@@ -870,7 +890,7 @@ export function ContextProvider({children}){
 // NEW SCENE: Nemesis - Squeeze (Hygiene Check)
 "nemesis_squeeze": {
     text: stats.hygiene <= 3
-        ? `You drop your shoulder and attempt to squeeze between Stu and the wall. Your low **Hygiene** is your weapon. Stu is forced to take a lungful of your 'Egg, Beans, and Sardine combo' aroma. He recoils instantly, his eyes watering, clutching his throat and gagging. "What IS that?!" he coughs, creating a large, clear lane for you to sprint past.`
+        ? `You drop your shoulder and attempt to squeeze between Stu and the wall. Your low **Hygiene** is your weapon. Stu is forced to take a lungful of your 'Egg, Beans, and Sardine combo' aroma. He recoils instantly, his eyes watering, clutching his throat and gagging. "What IS that?!" he coughs, creating a large, clear lane for you to sprint past. You're not sure whether you should be proud or embarrassed by what just happened`
         : `You attempt to wedge your body past him, but your relatively high **Hygiene** provides no defensive barrier. Stu simply shoves you back with a massive forearm, sending you sprawling into a garbage can. "Not even worth getting my hands dirty," he growls. You emerge smelling of trash and failure.`,
     choices: [
         {
@@ -932,8 +952,8 @@ export function ContextProvider({children}){
 // NEW SCENE: after_warmup_walk (Hygiene Check)
 "after_warmup_walk": {
     text: stats.hygiene <= 3
-        ? `You walk at a snail's pace, letting the crowd of more enthusiastic students buffer you. Because your **Hygiene** is so low, a small, invisible cloud of 'essence' surrounds you. No one wants to jog close to you, and the coach avoids getting near enough to yell at you directly. You escape the run undetected.`
-        : `You attempt to walk, but your relative cleanliness means other students keep jogging near you. The coach spots you immediately. "Hey, *you* in the poorly-fitting uniform! I said JOG! Are you deaf *and* lazy?!" He forces you to run the remaining laps with him jogging right beside you.`,
+        ? `You settle into a barely-a-walk that only you and possibly a sloth could appreciate. A few students start to jog up behind you, but then they hit a sudden, invisible wall. Your **Hygiene** is so low that a two-foot radius around you is a social dead zone. They veer wide, cough dramatically, and make a huge circle to pass. Even when the coach glances your way, he squints, seems to re-evaluate whether you're worth the effort, and just yells at someone closer. **Your bio-status has earned you peace.**`
+        : `You try your best to look busy, but your relative cleanliness means you don't offer any natural defense against unwanted proximity. A few classmates immediately joins you in your slow walk, ruining your attempts to sneak past. Predictably, the coach spots your little walking party. "HEY! YOU BUNCH OF BOZOS! I SAID JOG!" He sprints over and starts running backwards directly in front of you, forcing you to pick up the pace and .`,
     choices: [
         {
             text: "Wait for the next disaster.",
@@ -959,7 +979,7 @@ export function ContextProvider({children}){
         {
             text: "Take the shortcut through the dark alley (Hygiene Check: The stealth option).",
             nextSceneId: "alley_shortcut",
-            statChange: stats.hygiene <= 3 ? { hp: 1 } : { hp: -2, dignity: -2 }
+            statChange: stats.hygiene <= 3 ? null : { hp: -2, dignity: -2 }
         },
         {
             text: "Brave the main street, weaving through traffic (HP Check: The endurance option).",
@@ -969,7 +989,7 @@ export function ContextProvider({children}){
         {
             text: "Attempt a detour through the fancy neighborhood (Dignity Check: The social option).",
             nextSceneId: "fancy_detour",
-            statChange: stats.dignity >= 8 ? { hp: 1 } : { dignity: -2, hygiene: -1 }
+            statChange: stats.dignity >= 8 ? { dignity: 1 } : { dignity: -2, hygiene: -1 }
         }
     ]
 },
@@ -1003,8 +1023,8 @@ export function ContextProvider({children}){
 // NEW SCENE: fancy_detour (Dignity Check)
 "fancy_detour": {
     text: stats.dignity >= 8
-        ? `You take the detour. The houses are pristine, the lawns manicured. A neighborhood watch car slows down to observe you. Your high **Dignity** allows you to meet the driver's gaze calmly, radiating an air of unassailable, even if misleading, importance. The driver, confused by your confidence, waves and drives on. You pass through without incident.`
-        : `You attempt to walk through the rich neighborhood. A woman, watering her prize-winning petunias, takes one look at your shame-ridden, poorly-uniformed form. She picks up her phone and dials a number "Hello, There's a creepy looking person hanging around the neighbourhood." You realize you do not belong and must quickly retreat before the police show up.`,
+        ? `You decide to take the detour, sauntering past million-dirham villas. The air smells like imported pine and expensive regret. A large, black SUV with tinted windows—the neighborhood watch—slows to a crawl beside you. Your high **Dignity** allows you to meet the driver's gaze with the icy confidence of a CEO who's merely slumming it for charity. You give a slight, imperious nod that implies, "Yes, I own two of these streets, and I pay your salary." The driver, flustered, speeds away. You pass through without incident, a statue of pure, unfounded importance.`
+        : `You attempt to walk through the rich neighborhood. Instantly, a woman watering her flowers drops her hose and screams, "SECURITY! RELEASE THE HOUNDS!" Two tiny, neurotic **Chihuahuas** erupt from the manicured hedges, yapping like broken alarms and moving with astonishing speed. **You realize you've been recognized as a threat to property values because of your low dignity and creepiness.** You turn and bolt, running for your life as you hear their furious, high-pitched barks and the woman's triumphant shouts echoing behind you until you finally reach the safety of your home.`,
     choices: [
         {
             text: "Keep moving toward home.",
@@ -1155,7 +1175,7 @@ function generateEndOfDayReport() {
     else if (stats.hygiene <= LOW) {
         reportTitle = "The Biohazard Blob";
         reportDescription = "You are covered in a toxic film composed of sweat, exhaust, and construction filth. The *smell* arrived 30 seconds before you did. **Your clothes must be burned. You may need to be hosed down.**";
-        reportImgURL = 'shower.jpeg';
+        reportImgURL = 'stinker.jpg';
         reportCondition = 'Low Hygiene (<= 4)';
     }
 

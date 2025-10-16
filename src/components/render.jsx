@@ -19,8 +19,7 @@ useEffect(()=>{
     return(
         <div className="render-container">
             <div className="text-container">
-                {lastStatChange&&<span className="statChange">Stats were updated: {Object.entries(lastStatChange).map(([key, value]) =>value>0?`+${value} ${key}; `:`${value} ${key}; `)}<br/><hr/></span>}
-                
+{lastStatChange && <span className="statChangeSpan">Stats were updated: {Object.entries(lastStatChange).map(([key, value]) => <span key={key} className="stat-change" style={{color:value<0?'red':'limegreen'}}>{value > 0 ? `+${value} ${key} ` : `${value} ${key} `}</span>)}<br/><hr/></span>}                
                 {script[currSceneId||'place_holder'].text}.
                 {script[currSceneId||'place_holder'].image && <img src={script[currSceneId||'place_holder'].image} alt="scene image" />}
             </div>

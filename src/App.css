@@ -159,12 +159,15 @@ button:hover,.start:hover {
     color: var(--secondary-color);
 }
 
-.statChange{
+.statChangeSpan{
     font-size: 1.5rem;
     color: var(--primary-color);
+    display: flex;
+    flex-direction: column;
 }
-.statChange hr{
-    border:2px dotted var(--primary-color)
+.statChangeSpan hr{
+    border:2px dotted var(--primary-color);
+    width: 100%;
 }
 /* --- Report Screen Styles (Similar to .notice-container) --- */
 .report-container {
@@ -264,8 +267,11 @@ button:hover,.start:hover {
     font-size: larger;
 }
 img{
-    width: 300px;
+    width: 500px;
     aspect-ratio: 16/9;
     border: 3px solid var(--primary-color);
     border-radius: 10px;
+}
+.stat-change{
+    margin-inline: 5px;
 }
