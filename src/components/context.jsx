@@ -1195,7 +1195,7 @@ function generateEndOfDayReport() {
     else if (stats.hygiene >= HIGH) {
         reportTitle = "The Sparkling Target";
         reportDescription = "Despite the chaos, you remained bafflingly clean. Every piece of filth in your house is now magnetically drawn to you. **You are doomed to smell good, which seems to be the greatest handicap of all.**";
-        reportImgURL = 'Mr_Clean.jpeg';
+        reportImgURL = 'MrClean.jpeg';
         reportCondition = 'High Hygiene (8+)';
     }
 
